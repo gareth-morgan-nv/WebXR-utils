@@ -9,7 +9,63 @@
   const statusEl = document.getElementById('status');
   const summaryEl = document.getElementById('summary');
 
-  /** @type {null | { timestamp: string; results: { section: string; label: string; passed: boolean; note: string; ms: number }[] }} */
+  /**
+   * Canonical specification URLs (W3C / WHATWG / Khronos / GPU Web / drafts).
+   * @const {Record<string, string>}
+   */
+  var SPEC = {
+    webrtcPeerConnection: 'https://www.w3.org/TR/webrtc/#rtcpeerconnection-interface',
+    mediacaptureGetUserMedia: 'https://www.w3.org/TR/mediacapture-streams/#dom-mediadevices-getusermedia',
+    mediacaptureEnumerateDevices: 'https://www.w3.org/TR/mediacapture-streams/#dom-mediadevices-enumeratedevices',
+    webaudioAudioContext: 'https://www.w3.org/TR/we-audio-api/#AudioContext',
+    webrtcDataChannel: 'https://www.w3.org/TR/webrtc/#dom-rtcpeerconnection-createdatachannel',
+    webrtcGetStats: 'https://www.w3.org/TR/webrtc/#dom-rtcpeerconnection-getstats',
+    webrtcReceiverGetStats: 'https://www.w3.org/TR/webrtc/#dom-rtcrtpreceiver-getstats',
+    mediaCapabilities: 'https://www.w3.org/TR/media-capabilities/#dom-mediacapabilities-decodinginfo',
+    webrtcRtpCapabilities: 'https://www.w3.org/TR/webrtc/#rtcrtpcodec',
+    webrtcSdp: 'https://www.w3.org/TR/webrtc/#session-description-model',
+    webgl2Context: 'https://registry.khronos.org/webgl/specs/latest/2.0/#5.2',
+    webxrNavigatorXr: 'https://www.w3.org/TR/webxr/#navigator-xr-attribute',
+    webxrIsSessionSupported: 'https://www.w3.org/TR/webxr/#dom-xrsystem-issessionsupported',
+    webxrMakeXRCompatible: 'https://www.w3.org/TR/webxr/#dom-webglrenderingcontextbase-makexrcompatible',
+    webxrWebGLLayer: 'https://www.w3.org/TR/webxr/#xrwebgllayer-interface',
+    webxrLayersFoveation: 'https://www.w3.org/TR/webxrlayers-1/#fixed-foveation',
+    webxrRigidTransform: 'https://www.w3.org/TR/webxr/#xrrigidtransform-interface',
+    webxrRefSpaceOffset: 'https://www.w3.org/TR/webxr/#dom-xrreferencespace-getoffsetreferencespace',
+    webxrRequestSession: 'https://www.w3.org/TR/webxr/#dom-xrsystem-requestsession',
+    webxrUpdateRenderState: 'https://www.w3.org/TR/webxr/#dom-xrsession-updaterenderstate',
+    webxrRequestRefSpace: 'https://www.w3.org/TR/webxr/#dom-xrsession-requestreferencespace',
+    webxrRaf: 'https://www.w3.org/TR/webxr/#dom-xrsession-requestanimationframe',
+    webxrTargetFrameRate: 'https://www.w3.org/TR/webxr/#dom-xrsession-updatetargetframerate',
+    webxrSessionEnd: 'https://www.w3.org/TR/webxr/#dom-xrsession-end',
+    webxrGetViewerPose: 'https://www.w3.org/TR/webxr/#dom-xrframe-getviewerpose',
+    webxrHandGetJointPose: 'https://www.w3.org/TR/webxr-hand-input-1/#dom-xrframe-getjointpose',
+    webxrBodyTracking: 'https://immersive-web.github.io/body-tracking/',
+    whatwgCanvasCaptureStream: 'https://html.spec.whatwg.org/multipage/media.html#dom-canvas-capturestream',
+    webgpuNavigatorGpu: 'https://gpuweb.github.io/gpuweb/#navigator-gpu',
+    webgpuAdapter: 'https://gpuweb.github.io/gpuweb/#gpuadapter',
+    webgpuDevice: 'https://gpuweb.github.io/gpuweb/#gpudevice',
+    webgpuRequestAdapterOptions: 'https://gpuweb.github.io/gpuweb/#dictdef-gpurequestadapteroptions',
+    webxrWebgpuBinding: 'https://immersive-web.github.io/WebXR-WebGPU-Binding/',
+    pointerlock: 'https://www.w3.org/TR/pointerlock/',
+    fullscreen: 'https://fullscreen.spec.whatwg.org/',
+    htmlVideoFrameCallback: 'https://html.spec.whatwg.org/multipage/media.html#dom-htmlvideoelement-requestvideoframecallback',
+    htmlCanvas: 'https://html.spec.whatwg.org/multipage/canvas.html',
+    workers: 'https://html.spec.whatwg.org/multipage/workers.html#workers',
+    websockets: 'https://websockets.spec.whatwg.org/',
+    gamepad: 'https://www.w3.org/TR/gamepad/',
+    htmlWindowOpen: 'https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-open',
+    cssomViewPixelRatio: 'https://drafts.csswg.org/cssom-view/#dom-window-devicepixelratio',
+    pointereventsRawUpdate: 'https://www.w3.org/TR/pointerevents3/#dom-pointerevent-pointerrawupdate',
+    uieventsKeyboard: 'https://www.w3.org/TR/uievents/#interface-keyboardevent',
+    touchEvents: 'https://www.w3.org/TR/touch-events/',
+    serviceWorkers: 'https://html.spec.whatwg.org/multipage/service-workers.html',
+    clipboard: 'https://www.w3.org/TR/clipboard-apis/',
+    push: 'https://www.w3.org/TR/push-api/',
+    storageOverview: 'https://storage.spec.whatwg.org/'
+  };
+
+  /** @type {null | { timestamp: string; results: { section: string; label: string; passed: boolean; note: string; ms: number; spec: string | null }[] }} */
   let lastReport = null;
 
   function setStatus(t) {
@@ -783,215 +839,350 @@
   }
 
   /**
-   * @type {{ section: string; label: string; fn: () => Promise<boolean>; note?: string }[]}
+   * @type {{ section: string; label: string; fn: () => Promise<boolean>; note?: string; spec?: string }[]}
    */
   var TESTS = [
-    { section: 'WebRTC / streaming', label: 'RTCPeerConnection API', fn: testPeerConnection },
-    { section: 'WebRTC / streaming', label: 'getUserMedia() support', fn: testGetUserMedia },
+    {
+      section: 'WebRTC / streaming',
+      label: 'RTCPeerConnection API',
+      fn: testPeerConnection,
+      spec: SPEC.webrtcPeerConnection
+    },
+    {
+      section: 'WebRTC / streaming',
+      label: 'getUserMedia() support',
+      fn: testGetUserMedia,
+      spec: SPEC.mediacaptureGetUserMedia
+    },
     {
       section: 'WebRTC / streaming',
       label: 'Device enumeration API (enumerateDevices)',
-      fn: testEnumerateDevicesAPI
+      fn: testEnumerateDevicesAPI,
+      spec: SPEC.mediacaptureEnumerateDevices
     },
     {
       section: 'WebRTC / streaming',
       label: 'Device enumeration returns devices',
-      fn: testEnumerateDevicesNonEmpty
+      fn: testEnumerateDevicesNonEmpty,
+      spec: SPEC.mediacaptureEnumerateDevices
     },
     {
       section: 'WebRTC / streaming',
       label: 'Microphone listed in enumerateDevices',
-      fn: testMicrophoneEnumerated
+      fn: testMicrophoneEnumerated,
+      spec: SPEC.mediacaptureEnumerateDevices
     },
     {
       section: 'WebRTC / streaming',
       label: 'Microphone capture (getUserMedia audio)',
       fn: testMicrophoneCapture,
-      note: 'Fails if permission denied or no mic'
+      note: 'Fails if permission denied or no mic',
+      spec: SPEC.mediacaptureGetUserMedia
     },
-    { section: 'WebRTC / streaming', label: 'AudioContext support', fn: testAudioContext },
-    { section: 'WebRTC / streaming', label: 'RTCDataChannel support', fn: testRTCDataChannel },
+    {
+      section: 'WebRTC / streaming',
+      label: 'AudioContext support',
+      fn: testAudioContext,
+      spec: SPEC.webaudioAudioContext
+    },
+    {
+      section: 'WebRTC / streaming',
+      label: 'RTCDataChannel support',
+      fn: testRTCDataChannel,
+      spec: SPEC.webrtcDataChannel
+    },
     {
       section: 'WebRTC / streaming',
       label: 'RTCPeerConnection.getStats support',
-      fn: testPeerConnectionGetStats
+      fn: testPeerConnectionGetStats,
+      spec: SPEC.webrtcGetStats
     },
     {
       section: 'WebRTC / streaming',
       label: 'RTCRtpReceiver.getStats support',
-      fn: testRtpReceiverGetStats
+      fn: testRtpReceiverGetStats,
+      spec: SPEC.webrtcReceiverGetStats
     },
-    { section: 'Codecs', label: 'H.264 decode / WebRTC (baseline-oriented check)', fn: testH264 },
-    { section: 'Codecs', label: 'H.265 / HEVC decode (MediaCapabilities or WebRTC codec list)', fn: testH265 },
-    { section: 'Codecs', label: 'AV1 decode / WebRTC (MediaCapabilities or codec list)', fn: testAV1 },
-    { section: 'Codecs', label: 'Opus (stereo) in WebRTC audio codecs', fn: testBasicOpus },
+    {
+      section: 'Codecs',
+      label: 'H.264 decode / WebRTC (baseline-oriented check)',
+      fn: testH264,
+      spec: SPEC.mediaCapabilities
+    },
+    {
+      section: 'Codecs',
+      label: 'H.265 / HEVC decode (MediaCapabilities or WebRTC codec list)',
+      fn: testH265,
+      spec: SPEC.mediaCapabilities
+    },
+    {
+      section: 'Codecs',
+      label: 'AV1 decode / WebRTC (MediaCapabilities or codec list)',
+      fn: testAV1,
+      spec: SPEC.mediaCapabilities
+    },
+    {
+      section: 'Codecs',
+      label: 'Opus (stereo) in WebRTC audio codecs',
+      fn: testBasicOpus,
+      spec: SPEC.webrtcRtpCapabilities
+    },
     {
       section: 'WebRTC / streaming',
       label: 'Generic Frame Descriptor (SDP answer)',
-      fn: testGenericFrameDescriptor
+      fn: testGenericFrameDescriptor,
+      spec: SPEC.webrtcSdp
     },
-    { section: 'WebRTC / streaming', label: 'FlexFEC-03 (capabilities or SDP answer)', fn: testFlexfec },
-    { section: 'Graphics / XR', label: 'WebGL 2.0 context', fn: testWebGL2 },
-    { section: 'Graphics / XR', label: 'WebXR device API (navigator.xr)', fn: testWebXRPresent },
-    { section: 'Graphics / XR', label: 'WebXR immersive-vr session supported', fn: testWebXRVR },
-    { section: 'Graphics / XR', label: 'WebXR immersive-ar session supported', fn: testWebXRAR },
+    {
+      section: 'WebRTC / streaming',
+      label: 'FlexFEC-03 (capabilities or SDP answer)',
+      fn: testFlexfec,
+      spec: SPEC.webrtcSdp
+    },
+    { section: 'Graphics / XR', label: 'WebGL 2.0 context', fn: testWebGL2, spec: SPEC.webgl2Context },
+    {
+      section: 'Graphics / XR',
+      label: 'WebXR device API (navigator.xr)',
+      fn: testWebXRPresent,
+      spec: SPEC.webxrNavigatorXr
+    },
+    {
+      section: 'Graphics / XR',
+      label: 'WebXR immersive-vr session supported',
+      fn: testWebXRVR,
+      spec: SPEC.webxrIsSessionSupported
+    },
+    {
+      section: 'Graphics / XR',
+      label: 'WebXR immersive-ar session supported',
+      fn: testWebXRAR,
+      spec: SPEC.webxrIsSessionSupported
+    },
     {
       section: 'WebXR application APIs',
       label: 'WebGL2RenderingContext.makeXRCompatible',
       fn: testWebGL2MakeXRCompatible,
-      note: 'Aligns WebGL with the active XR device (WebXR).'
+      note: 'Aligns WebGL with the active XR device (WebXR).',
+      spec: SPEC.webxrMakeXRCompatible
     },
     {
       section: 'WebXR application APIs',
       label: 'XRWebGLLayer constructor',
-      fn: testXRWebGLLayerConstructor
+      fn: testXRWebGLLayerConstructor,
+      spec: SPEC.webxrWebGLLayer
     },
     {
       section: 'WebXR application APIs',
       label: 'XRWebGLLayer.fixedFoveation (where implemented)',
       fn: testXRWebGLLayerFixedFoveationAPI,
-      note: 'Optional; not all UAs expose this on XRWebGLLayer.'
+      note: 'Optional; not all UAs expose this on XRWebGLLayer.',
+      spec: SPEC.webxrLayersFoveation
     },
     {
       section: 'WebXR application APIs',
       label: 'XRRigidTransform',
       fn: testXRRigidTransform,
-      note: 'Used with getOffsetReferenceSpace for spatial offsets.'
+      note: 'Used with getOffsetReferenceSpace for spatial offsets.',
+      spec: SPEC.webxrRigidTransform
     },
     {
       section: 'WebXR application APIs',
       label: 'XRReferenceSpace.getOffsetReferenceSpace',
-      fn: testXRReferenceSpaceGetOffsetReferenceSpace
+      fn: testXRReferenceSpaceGetOffsetReferenceSpace,
+      spec: SPEC.webxrRefSpaceOffset
     },
     {
       section: 'WebXR application APIs',
       label: 'XRSystem.requestSession',
       fn: testXRSessionRequestSession,
-      note: 'Feature descriptors (e.g. local-floor, hand-tracking, body-tracking) are negotiated here; not invoked in this page.'
+      note: 'Feature descriptors (e.g. local-floor, hand-tracking, body-tracking) are negotiated here; not invoked in this page.',
+      spec: SPEC.webxrRequestSession
     },
     {
       section: 'WebXR application APIs',
       label: 'XRSession.updateRenderState (baseLayer)',
-      fn: testXRSessionUpdateRenderState
+      fn: testXRSessionUpdateRenderState,
+      spec: SPEC.webxrUpdateRenderState
     },
     {
       section: 'WebXR application APIs',
       label: 'XRSession.requestReferenceSpace',
       fn: testXRSessionRequestReferenceSpace,
-      note: 'Common types include viewer, local, local-floor, unbounded (UA-dependent).'
+      note: 'Common types include viewer, local, local-floor, unbounded (UA-dependent).',
+      spec: SPEC.webxrRequestRefSpace
     },
     {
       section: 'WebXR application APIs',
       label: 'XRSession.requestAnimationFrame',
-      fn: testXRSessionRequestAnimationFrame
+      fn: testXRSessionRequestAnimationFrame,
+      spec: SPEC.webxrRaf
     },
     {
       section: 'WebXR application APIs',
       label: 'XRSession.updateTargetFrameRate',
       fn: testXRSessionUpdateTargetFrameRate,
-      note: 'Optional; availability is UA- and device-specific.'
+      note: 'Optional; availability is UA- and device-specific.',
+      spec: SPEC.webxrTargetFrameRate
     },
     {
       section: 'WebXR application APIs',
       label: 'XRSession.end',
-      fn: testXRSessionEnd
+      fn: testXRSessionEnd,
+      spec: SPEC.webxrSessionEnd
     },
     {
       section: 'WebXR application APIs',
       label: 'XRFrame.getViewerPose',
-      fn: testXRFrameGetViewerPose
+      fn: testXRFrameGetViewerPose,
+      spec: SPEC.webxrGetViewerPose
     },
     {
       section: 'WebXR application APIs',
       label: 'Hand tracking API (XRFrame.getJointPose)',
       fn: testXRHandTrackingAPI,
-      note: 'Requires optional session feature hand-tracking; hardware may still omit poses.'
+      note: 'Requires optional session feature hand-tracking; hardware may still omit poses.',
+      spec: SPEC.webxrHandGetJointPose
     },
     {
       section: 'WebXR application APIs',
       label: 'Body tracking API (XRFrame.body / XRBody)',
       fn: testXRBodyTrackingAPI,
-      note: 'Requires optional session feature body-tracking; hardware may still omit data.'
+      note: 'Requires optional session feature body-tracking; hardware may still omit data.',
+      spec: SPEC.webxrBodyTracking
     },
     {
       section: 'WebXR application APIs',
       label: 'HTMLCanvasElement.captureStream',
       fn: testCanvasCaptureStream,
-      note: 'Media Capture from DOM Elements; pairs with MediaStream APIs.'
+      note: 'Media Capture from DOM Elements; pairs with MediaStream APIs.',
+      spec: SPEC.whatwgCanvasCaptureStream
     },
-    { section: 'Graphics / XR', label: 'WebGPU (navigator.gpu)', fn: testWebGPUNavigator },
-    { section: 'Graphics / XR', label: 'WebGPU adapter (requestAdapter)', fn: testWebGPUAdapter },
+    {
+      section: 'Graphics / XR',
+      label: 'WebGPU (navigator.gpu)',
+      fn: testWebGPUNavigator,
+      spec: SPEC.webgpuNavigatorGpu
+    },
+    {
+      section: 'Graphics / XR',
+      label: 'WebGPU adapter (requestAdapter)',
+      fn: testWebGPUAdapter,
+      spec: SPEC.webgpuAdapter
+    },
     {
       section: 'Graphics / XR',
       label: 'WebGPU device (requestDevice)',
       fn: testWebGPUDevice,
-      note: 'Creates then destroys a device'
+      note: 'Creates then destroys a device',
+      spec: SPEC.webgpuDevice
     },
     {
       section: 'Graphics / XR',
       label: 'WebGPU xrCompatible adapter (requestAdapter({ xrCompatible: true }))',
       fn: testWebGPUXRCompatibleAdapter,
-      note: 'Needed for WebXR WebGPU sessions'
+      note: 'Needed for WebXR WebGPU sessions',
+      spec: SPEC.webgpuRequestAdapterOptions
     },
     {
       section: 'Graphics / XR',
       label: 'WebXR–WebGPU binding (XRGPUBinding / XRWebGPUBinding)',
       fn: testWebXRWebGPUBindingType,
-      note: 'Session feature descriptor webgpu; no session started on this page.'
+      note: 'Session feature descriptor webgpu; no session started on this page.',
+      spec: SPEC.webxrWebgpuBinding
     },
-    { section: 'Input / display', label: 'Pointer Lock API', fn: testPointerLock },
-    { section: 'Input / display', label: 'Fullscreen API', fn: testFullscreen },
-    { section: 'Media / video', label: 'HTMLVideoElement.requestVideoFrameCallback', fn: testVideoFrameCallback },
+    { section: 'Input / display', label: 'Pointer Lock API', fn: testPointerLock, spec: SPEC.pointerlock },
+    { section: 'Input / display', label: 'Fullscreen API', fn: testFullscreen, spec: SPEC.fullscreen },
+    {
+      section: 'Media / video',
+      label: 'HTMLVideoElement.requestVideoFrameCallback',
+      fn: testVideoFrameCallback,
+      spec: SPEC.htmlVideoFrameCallback
+    },
     {
       section: 'Media / video',
       label: 'Media playback (changing frames from canvas stream)',
-      fn: testMediaPlaybackFrames
+      fn: testMediaPlaybackFrames,
+      spec: SPEC.htmlCanvas
     },
-    { section: 'Runtime', label: 'Web Worker support', fn: testWebWorker },
-    { section: 'Runtime', label: 'WebSocket support', fn: testWebSocket },
-    { section: 'Input / display', label: 'Gamepad API', fn: testGamepadAPI },
-    { section: 'Runtime', label: 'window.open() available', fn: testWindowOpen },
-    { section: 'Input / display', label: 'devicePixelRatio', fn: testDevicePixelRatio },
+    { section: 'Runtime', label: 'Web Worker support', fn: testWebWorker, spec: SPEC.workers },
+    { section: 'Runtime', label: 'WebSocket support', fn: testWebSocket, spec: SPEC.websockets },
+    { section: 'Input / display', label: 'Gamepad API', fn: testGamepadAPI, spec: SPEC.gamepad },
+    {
+      section: 'Runtime',
+      label: 'window.open() available',
+      fn: testWindowOpen,
+      spec: SPEC.htmlWindowOpen
+    },
+    {
+      section: 'Input / display',
+      label: 'devicePixelRatio',
+      fn: testDevicePixelRatio,
+      spec: SPEC.cssomViewPixelRatio
+    },
     {
       section: 'Media / video',
       label: 'High frame rate decode (≥120fps via MediaCapabilities)',
-      fn: testHighFrameRateDecoding
+      fn: testHighFrameRateDecoding,
+      spec: SPEC.mediaCapabilities
     },
-    { section: 'Input / display', label: 'PointerEvent pointerrawupdate', fn: testPointerRawUpdate },
-    { section: 'Input / display', label: 'Keyboard events', fn: testKeyboardEvents },
-    { section: 'Input / display', label: 'TouchEvent constructor', fn: testTouchEvents },
+    {
+      section: 'Input / display',
+      label: 'PointerEvent pointerrawupdate',
+      fn: testPointerRawUpdate,
+      spec: SPEC.pointereventsRawUpdate
+    },
+    {
+      section: 'Input / display',
+      label: 'Keyboard events',
+      fn: testKeyboardEvents,
+      spec: SPEC.uieventsKeyboard
+    },
+    {
+      section: 'Input / display',
+      label: 'TouchEvent constructor',
+      fn: testTouchEvents,
+      spec: SPEC.touchEvents
+    },
     {
       section: 'Runtime',
       label: 'PWA surface (SW + manifest link + Cache Storage)',
       fn: testPWA,
-      note: 'Usually false on plain static pages without manifest'
+      note: 'Usually false on plain static pages without manifest',
+      spec: SPEC.serviceWorkers
     },
     {
       section: 'Runtime',
       label: 'Clipboard API (secure context)',
       fn: testClipboardAPI,
-      note: 'Requires HTTPS'
+      note: 'Requires HTTPS',
+      spec: SPEC.clipboard
     },
     {
       section: 'Runtime',
       label: 'Push API surface (SW + PushManager + Notification)',
       fn: testPushNotifications,
-      note: 'Requires HTTPS; does not subscribe'
+      note: 'Requires HTTPS; does not subscribe',
+      spec: SPEC.push
     },
-    { section: 'Runtime', label: 'Browser storage (local, session, IndexedDB, cookies)', fn: testBrowserStorage }
+    {
+      section: 'Runtime',
+      label: 'Browser storage (local, session, IndexedDB, cookies)',
+      fn: testBrowserStorage,
+      spec: SPEC.storageOverview
+    }
   ];
 
   function renderSectionRow(section) {
     var tr = document.createElement('tr');
     tr.className = 'section';
     tr.innerHTML =
-      '<td colspan="3">' +
+      '<td colspan="4">' +
       section.replace(/&/g, '&amp;').replace(/</g, '&lt;') +
       '</td>';
     tbody.appendChild(tr);
   }
 
-  function renderResultRow(label, passed, note, durationMs) {
+  function renderResultRow(label, passed, note, durationMs, specHref) {
     var tr = document.createElement('tr');
     var nameTd = document.createElement('td');
     nameTd.textContent = label;
@@ -1010,9 +1201,23 @@
     var noteTd = document.createElement('td');
     noteTd.className = 'note';
     noteTd.textContent = note || '';
+    var specTd = document.createElement('td');
+    specTd.className = 'spec';
+    if (specHref) {
+      var a = document.createElement('a');
+      a.href = specHref;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = 'Spec';
+      a.title = specHref;
+      specTd.appendChild(a);
+    } else {
+      specTd.textContent = '—';
+    }
     tr.appendChild(nameTd);
     tr.appendChild(resTd);
     tr.appendChild(noteTd);
+    tr.appendChild(specTd);
     tbody.appendChild(tr);
   }
 
@@ -1046,13 +1251,14 @@
       if (!ok && t.fn === testMicrophoneCapture) {
         note = note || 'Permission denied, timeout, or no hardware';
       }
-      renderResultRow(t.label, ok, note, ms);
+      renderResultRow(t.label, ok, note, ms, t.spec);
       results.push({
         section: t.section,
         label: t.label,
         passed: ok,
         note: note,
-        ms: Math.round(ms * 100) / 100
+        ms: Math.round(ms * 100) / 100,
+        spec: t.spec || null
       });
     }
 

@@ -60,6 +60,13 @@
     .pass { color: #6ecf68; font-weight: 600; }
     .fail { color: #e07070; font-weight: 600; }
     .note { color: #888; font-size: 0.82rem; max-width: 22rem; }
+    th.spec-col, td.spec { width: 3.5rem; text-align: center; white-space: nowrap; }
+    td.spec a {
+      color: #8ec5ff;
+      font-size: 0.82rem;
+      text-decoration: none;
+    }
+    td.spec a:hover { text-decoration: underline; }
     .summary {
       margin-top: 1rem;
       padding: 0.75rem 1rem;
@@ -76,7 +83,7 @@
     <p><a class="back" href="../">← WebXR utils</a></p>
     <h1>Browser capabilities check</h1>
     <p class="sub">
-      Automated checks for Web APIs, codecs, WebGL&nbsp;2, WebGPU, WebXR (including layers, reference spaces, frame loop, optional hand/body modules), WebXR–WebGPU binding, canvas <code>captureStream</code>, input, and storage. Some tests need HTTPS and may prompt for microphone permission.
+      Automated checks for Web APIs, codecs, WebGL&nbsp;2, WebGPU, WebXR (including layers, reference spaces, frame loop, optional hand/body modules), WebXR–WebGPU binding, canvas <code>captureStream</code>, input, and storage. The <strong>Spec</strong> column links to the relevant W3C / WHATWG / Khronos, or draft spec where there is no W3C TR yet. Some tests need HTTPS and may prompt for microphone permission.
     </p>
     <div class="toolbar">
       <button type="button" class="primary" id="runBtn">Run all tests</button>
@@ -89,6 +96,7 @@
           <th>Test</th>
           <th>Result</th>
           <th>Notes</th>
+          <th class="spec-col">Spec</th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
