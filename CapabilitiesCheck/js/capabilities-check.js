@@ -635,7 +635,7 @@
     }
   }
 
-  /** CloudXR simple client: gl.makeXRCompatible() before XRWebGLLayer */
+  /** WebGL 2.0: makeXRCompatible() for XR compositing (WebXR). */
   async function testWebGL2MakeXRCompatible() {
     var canvas = document.createElement('canvas');
     var gl = canvas.getContext('webgl2');
@@ -643,12 +643,12 @@
     return typeof gl.makeXRCompatible === 'function';
   }
 
-  /** XRWebGLLayer(session, gl, init) — main compositor path in main.ts */
+  /** XRWebGLLayer — WebGL-backed XR layer (WebXR Device API). */
   async function testXRWebGLLayerConstructor() {
     return typeof XRWebGLLayer === 'function';
   }
 
-  /** Quest Browser local render foveation (main.ts checks 'fixedFoveation' in baseLayer) */
+  /** XRWebGLLayer.fixedFoveation — optional fixed foveation where the UA exposes it */
   async function testXRWebGLLayerFixedFoveationAPI() {
     if (typeof XRWebGLLayer === 'undefined') return false;
     try {
@@ -660,7 +660,7 @@
     }
   }
 
-  /** XRRigidTransform + referenceSpace.getOffsetReferenceSpace (cm offsets in UI) */
+  /** XRRigidTransform — rigid transforms for XR spaces (WebXR). */
   async function testXRRigidTransform() {
     return typeof XRRigidTransform === 'function';
   }
@@ -691,7 +691,7 @@
     return typeof XRSession.prototype.requestAnimationFrame === 'function';
   }
 
-  /** main.ts: updateTargetFrameRate(deviceFrameRate) on first frame */
+  /** XRSession.updateTargetFrameRate — optional UA extension (WebXR). */
   async function testXRSessionUpdateTargetFrameRate() {
     if (typeof XRSession === 'undefined') return false;
     return typeof XRSession.prototype.updateTargetFrameRate === 'function';
@@ -707,17 +707,13 @@
     return typeof XRFrame.prototype.getViewerPose === 'function';
   }
 
-  /**
-   * Optional session feature "hand-tracking" in main.ts — API surface (Hand Input Module).
-   */
+  /** WebXR Hand Input Module: XRFrame.getJointPose (session feature hand-tracking). */
   async function testXRHandTrackingAPI() {
     if (typeof XRFrame === 'undefined') return false;
     return typeof XRFrame.prototype.getJointPose === 'function';
   }
 
-  /**
-   * Optional session feature "body-tracking" in main.ts — Body Tracking module (frame.body / XRBody).
-   */
+  /** WebXR Body Tracking: XRFrame.body / XRBody (session feature body-tracking). */
   async function testXRBodyTrackingAPI() {
     if (typeof XRBody !== 'undefined') return true;
     if (typeof XRFrame === 'undefined') return false;
@@ -730,7 +726,7 @@
     }
   }
 
-  /** CloudXR BrowserCapabilities: streaming / texture path */
+  /** HTMLCanvasElement.captureStream — Media Capture from DOM Elements. */
   async function testCanvasCaptureStream() {
     var canvas = document.createElement('canvas');
     return typeof canvas.captureStream === 'function';
@@ -776,8 +772,8 @@
   }
 
   /**
-   * WebXR–WebGPU binding (immersive-web WebXR-WebGPU-Binding proposal): XRGPUBinding + session feature "webgpu".
-   * Also recognizes XRWebGPUBinding if a UA uses that name.
+   * WebXR / WebGPU integration: XRGPUBinding with session feature descriptor webgpu (spec).
+   * Some UAs may expose XRWebGPUBinding instead.
    */
   async function testWebXRWebGPUBindingType() {
     return (
@@ -840,88 +836,88 @@
     { section: 'Graphics / XR', label: 'WebXR immersive-vr session supported', fn: testWebXRVR },
     { section: 'Graphics / XR', label: 'WebXR immersive-ar session supported', fn: testWebXRAR },
     {
-      section: 'WebXR · CloudXR simple client',
+      section: 'WebXR application APIs',
       label: 'WebGL2RenderingContext.makeXRCompatible',
       fn: testWebGL2MakeXRCompatible,
-      note: 'Used before XRWebGLLayer in simple/src/main.ts'
+      note: 'Aligns WebGL with the active XR device (WebXR).'
     },
     {
-      section: 'WebXR · CloudXR simple client',
+      section: 'WebXR application APIs',
       label: 'XRWebGLLayer constructor',
       fn: testXRWebGLLayerConstructor
     },
     {
-      section: 'WebXR · CloudXR simple client',
-      label: 'XRWebGLLayer.fixedFoveation (optional Quest FFR)',
+      section: 'WebXR application APIs',
+      label: 'XRWebGLLayer.fixedFoveation (where implemented)',
       fn: testXRWebGLLayerFixedFoveationAPI,
-      note: 'main.ts sets fixedFoveation when supported'
+      note: 'Optional; not all UAs expose this on XRWebGLLayer.'
     },
     {
-      section: 'WebXR · CloudXR simple client',
+      section: 'WebXR application APIs',
       label: 'XRRigidTransform',
       fn: testXRRigidTransform,
-      note: 'Reference-space offset from UI (cm → m)'
+      note: 'Used with getOffsetReferenceSpace for spatial offsets.'
     },
     {
-      section: 'WebXR · CloudXR simple client',
+      section: 'WebXR application APIs',
       label: 'XRReferenceSpace.getOffsetReferenceSpace',
       fn: testXRReferenceSpaceGetOffsetReferenceSpace
     },
     {
-      section: 'WebXR · CloudXR simple client',
+      section: 'WebXR application APIs',
       label: 'XRSystem.requestSession',
       fn: testXRSessionRequestSession,
-      note: 'Sample: requiredFeatures ["local-floor"], optional ["hand-tracking","body-tracking"] — not probed here'
+      note: 'Feature descriptors (e.g. local-floor, hand-tracking, body-tracking) are negotiated here; not invoked in this page.'
     },
     {
-      section: 'WebXR · CloudXR simple client',
+      section: 'WebXR application APIs',
       label: 'XRSession.updateRenderState (baseLayer)',
       fn: testXRSessionUpdateRenderState
     },
     {
-      section: 'WebXR · CloudXR simple client',
+      section: 'WebXR application APIs',
       label: 'XRSession.requestReferenceSpace',
       fn: testXRSessionRequestReferenceSpace,
-      note: 'Falls back local-floor → local → viewer in main.ts'
+      note: 'Common types include viewer, local, local-floor, unbounded (UA-dependent).'
     },
     {
-      section: 'WebXR · CloudXR simple client',
+      section: 'WebXR application APIs',
       label: 'XRSession.requestAnimationFrame',
       fn: testXRSessionRequestAnimationFrame
     },
     {
-      section: 'WebXR · CloudXR simple client',
+      section: 'WebXR application APIs',
       label: 'XRSession.updateTargetFrameRate',
       fn: testXRSessionUpdateTargetFrameRate,
-      note: 'Optional; main.ts uses on first XR frame when present'
+      note: 'Optional; availability is UA- and device-specific.'
     },
     {
-      section: 'WebXR · CloudXR simple client',
+      section: 'WebXR application APIs',
       label: 'XRSession.end',
       fn: testXRSessionEnd
     },
     {
-      section: 'WebXR · CloudXR simple client',
+      section: 'WebXR application APIs',
       label: 'XRFrame.getViewerPose',
       fn: testXRFrameGetViewerPose
     },
     {
-      section: 'WebXR · CloudXR simple client',
+      section: 'WebXR application APIs',
       label: 'Hand tracking API (XRFrame.getJointPose)',
       fn: testXRHandTrackingAPI,
-      note: 'Matches optional feature hand-tracking in main.ts; device may still omit support'
+      note: 'Requires optional session feature hand-tracking; hardware may still omit poses.'
     },
     {
-      section: 'WebXR · CloudXR simple client',
+      section: 'WebXR application APIs',
       label: 'Body tracking API (XRFrame.body / XRBody)',
       fn: testXRBodyTrackingAPI,
-      note: 'Matches optional feature body-tracking in main.ts; device may still omit support'
+      note: 'Requires optional session feature body-tracking; hardware may still omit data.'
     },
     {
-      section: 'WebXR · CloudXR simple client',
+      section: 'WebXR application APIs',
       label: 'HTMLCanvasElement.captureStream',
       fn: testCanvasCaptureStream,
-      note: 'Required in simple/helpers/BrowserCapabilities for CloudXR client'
+      note: 'Media Capture from DOM Elements; pairs with MediaStream APIs.'
     },
     { section: 'Graphics / XR', label: 'WebGPU (navigator.gpu)', fn: testWebGPUNavigator },
     { section: 'Graphics / XR', label: 'WebGPU adapter (requestAdapter)', fn: testWebGPUAdapter },
@@ -941,7 +937,7 @@
       section: 'Graphics / XR',
       label: 'WebXR–WebGPU binding (XRGPUBinding / XRWebGPUBinding)',
       fn: testWebXRWebGPUBindingType,
-      note: 'Uses session feature "webgpu"; session not started here'
+      note: 'Session feature descriptor webgpu; no session started on this page.'
     },
     { section: 'Input / display', label: 'Pointer Lock API', fn: testPointerLock },
     { section: 'Input / display', label: 'Fullscreen API', fn: testFullscreen },
