@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebXR utils</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+      background: #121212;
+      color: #e8e8e8;
+      line-height: 1.5;
+      padding: clamp(1.5rem, 4vw, 3rem);
+    }
+    main {
+      max-width: 40rem;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 600;
+      margin: 0 0 0.75rem;
+    }
+    p.lead {
+      margin: 0 0 2rem;
+      color: #a8a8a8;
+      font-size: 1.05rem;
+    }
+    ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    li {
+      margin-bottom: 0.75rem;
+    }
+    a {
+      color: #7eb8ff;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .card {
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      background: #1a1a1a;
+    }
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0 0 0.35rem;
+    }
+    .card p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>WebXR utils</h1>
+    <p class="lead">Some simple test pages and utils for WebXR.</p>
+    <ul>
+      <li class="card">
+        <h2><a href="PassThrough/">Pass-through test</a></h2>
+        <p>WebGL2 full-screen quad with video or static texture, plus immersive VR/AR (WebXR).</p>
+      </li>
+    </ul>
+  </main>
+</body>
+</html>

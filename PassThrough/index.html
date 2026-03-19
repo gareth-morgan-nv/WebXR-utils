@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebXR Pass-Through Test</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      overflow: hidden;
+    }
+    #canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      touch-action: none;
+    }
+    #ui {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      z-index: 10;
+    }
+    #ui button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: 1px solid #444;
+      border-radius: 8px;
+      background: #2a2a2a;
+      color: #e0e0e0;
+      cursor: pointer;
+    }
+    #ui button:hover {
+      background: #3a3a3a;
+      border-color: #666;
+    }
+    #ui button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    #status {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.85rem;
+      color: #888;
+      z-index: 10;
+    }
+    #ui select {
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      border: 1px solid #444;
+      border-radius: 8px;
+      background: #2a2a2a;
+      color: #e0e0e0;
+      cursor: pointer;
+    }
+    #ui label.layer-depth {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    #ui label.layer-depth input {
+      width: 1rem;
+      height: 1rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="ui">
+    <label for="tessellationSelect">Tessellation (total verts):</label>
+    <select id="tessellationSelect" title="Total vertex count (equivalent to kTesselationMult)">
+      <option value="25000">25k</option>
+      <option value="40000">40k</option>
+      <option value="75000">75k</option>
+      <option value="100000">100k</option>
+      <option value="150000">150k</option>
+      <option value="200000" selected>200k</option>
+      <option value="400000">400k</option>
+      <option value="600000">600k</option>
+      <option value="2400000">2.4M</option>
+      <option value="9400000">9.4M</option>
+    </select>
+    <label for="sourceSelect">Source:</label>
+    <select id="sourceSelect" title="Texture source: video or static image">
+      <option value="video" selected>Video</option>
+      <option value="static">Static image</option>
+    </select>
+    <label class="layer-depth" for="layerDepthCheck" title="XRWebGLLayer depth buffer (recreates layer when toggled in XR)">
+      <input type="checkbox" id="layerDepthCheck" checked />
+      WebGLLayer depth
+    </label>
+    <button id="btnVR" type="button">Enter VR</button>
+    <button id="btnAR" type="button">Enter AR</button>
+    <button id="btnExit" type="button" style="display: none;">Exit XR</button>
+  </div>
+  <div id="status">Loading…</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
